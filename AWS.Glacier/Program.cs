@@ -77,6 +77,40 @@ app.MapGet("/list-vaults", async (
 
 });
 
+app.MapGet("/describe-vault", async (
+    [FromServices] IAmazonGlacier _amazonGlacier,
+    [FromQuery] string vaultName) =>
+{
+    DescribeVaultResponse describeVaultResponse = default;
+
+    try
+    {
+        var describeVaultRequest = new DescribeVaultRequest()
+        {
+            VaultName = vaultName
+        };
+
+        describeVaultResponse = await _amazonGlacier.DescribeVaultAsync(describeVaultRequest);
+
+    }
+    catch (ResourceNotFoundException)
+    {
+        return Results.NotFound("Vault not exists");
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest($"Vault not created : {ex.Message}");
+
+    }
+
+    return Results.Ok(describeVaultResponse);
+
+
+
+});
+
+
+
 
 
 app.Run();
