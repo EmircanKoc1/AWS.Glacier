@@ -1,0 +1,6 @@
+@AWS.Glacier_HostAddress = http://localhost:5128
+
+GET {{AWS.Glacier_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
