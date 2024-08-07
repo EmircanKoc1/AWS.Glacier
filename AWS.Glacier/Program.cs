@@ -1,4 +1,6 @@
 using Amazon.Glacier;
+using Amazon.Glacier.Model;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,45 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.MapPost("/create-vault", async (
+    [FromServices] IAmazonGlacier _amazonGlacier,
+    [FromQuery] string vaultName) =>
+{
+    try
+    {
+        var describeVaultRequest = new DescribeVaultRequest()
+        {
+            VaultName = vaultName
+        };
+
+        await _amazonGlacier.DescribeVaultAsync(describeVaultRequest);
+
+    }
+    catch (ResourceNotFoundException)
+    {
+
+        var createVaultRequest = new CreateVaultRequest()
+        {
+            VaultName = vaultName
+        };
+
+        var createVaultResponse = await _amazonGlacier.CreateVaultAsync(createVaultRequest);
+
+        if (createVaultResponse.HttpStatusCode == System.Net.HttpStatusCode.OK)
+            return Results.Ok("Vault created");
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest($"Vault not created : {ex.Message}");
+
+    }
+
+
+    return Results.Ok("Vault  created");
+
+});
+
 
 
 
