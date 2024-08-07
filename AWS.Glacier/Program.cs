@@ -61,6 +61,21 @@ app.MapPost("/create-vault", async (
 
 });
 
+app.MapGet("/list-vaults", async (
+    [FromServices] IAmazonGlacier _amazonGlacier,
+    [FromQuery] int limit) =>
+{
+    var listVaultRequest = new ListVaultsRequest()
+    {
+        Limit = limit
+    };
+
+    var listVaultsResponse = await _amazonGlacier.ListVaultsAsync(listVaultRequest);
+
+    return Results.Ok(listVaultsResponse.VaultList);
+
+
+});
 
 
 
