@@ -110,7 +110,50 @@ app.MapGet("/describe-vault", async (
 });
 
 
+app.MapPost("/upload-archive", async (
+    [FromServices] IAmazonGlacier _amazonGlacier,
+    [FromQuery] string vaultName,
+    [FromForm] IFormFile file
+    ) =>
+{
 
+    try
+    {
+        var describeVaultRequest = new DescribeVaultRequest()
+        {
+            VaultName = vaultName
+        };
+
+        await _amazonGlacier.DescribeVaultAsync(describeVaultRequest);
+
+    }
+    catch (ResourceNotFoundException)
+    {
+        return Results.NotFound("Vault not exists");
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest($"not upload file to vault : {ex.Message}");
+
+    }
+
+
+    var uploadArchieveRequest = new UploadArchiveRequest()
+    {
+        VaultName = vaultName,
+        Body = file.OpenReadStream(),
+        ArchiveDescription = $"filename : {file.Name} + {file.FileName}",
+        Checksum = TreeHashGenerator.CalculateTreeHash(file.OpenReadStream())
+    };
+
+
+    var uploadArchiveResponse = await _amazonGlacier.UploadArchiveAsync(uploadArchieveRequest);
+
+
+    return Results.Ok(uploadArchiveResponse);
+
+
+}).DisableAntiforgery();
 
 
 app.Run();
