@@ -253,22 +253,36 @@ app.MapGet("get-archive", async (
     [FromQuery] string jobId,
     [FromQuery] string vaultName) =>
 {
+static async Task<VaultIsExistsModel> GetVaultIfExists(
+    IAmazonGlacier _amazonGlacier,
+    string vaultName)
+{
+    DescribeVaultResponse? describeVaultResponse = null;
+    string errorMessage = string.Empty;
+
     try
     {
         var describeVaultRequest = new DescribeVaultRequest()
         {
             VaultName = vaultName
         };
-        await _amazonGlacier.DescribeVaultAsync(describeVaultRequest);
+        describeVaultResponse = await _amazonGlacier.DescribeVaultAsync(describeVaultRequest);
 
     }
     catch (ResourceNotFoundException)
     {
-        return Results.NotFound("vault not found");
+        errorMessage = "vault not found";
     }
     catch (Exception ex)
     {
-        return Results.NotFound(ex.Message);
+        errorMessage = ex.Message;
+    }
+
+    return new VaultIsExistsModel(
+       vaultName: vaultName,
+       errorMessage: errorMessage,
+       describeVaultResponse: describeVaultResponse);
+
     }
 
 static async Task<JobIsExistsModel> GetJobIfExists(
