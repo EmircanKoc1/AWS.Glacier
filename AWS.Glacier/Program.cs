@@ -305,11 +305,31 @@ app.MapGet("get-archive", async (
         VaultName = vaultName
     };
 
-    var getJobOutputResponse = await _amazonGlacier.GetJobOutputAsync(getJobOutputRequest);
+static string GetContentTypeForFileName(string fileName)
+{
+    var fileInfoModel = GetFileInfo(fileName);
 
+    var contentType = fileInfoModel.fileType switch
+    {
+        "pdf" => "application/pdf",
+        "png" => "image/png",
+        "jpeg" => "image/jpeg",
+        "jpg" => "image/jpeg",
+        "html" => "text/html",
+        "htm" => "text/html",
+        "json" => "application/json",
+        "xml" => "application/xml",
+        "txt" => "text/plain",
+        "csv" => "text/csv",
+        "zip" => "application/zip",
+        "mp4" => "video/mp4",
+        "mp3" => "audio/mpeg",
+        _ => "application/octet-stream",
+    };
 
-    return Results.Ok(getJobOutputResponse);
+    return contentType;
 
+}
 
 });
 
