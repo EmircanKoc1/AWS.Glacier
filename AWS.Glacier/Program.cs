@@ -107,6 +107,17 @@ app.MapPost("/upload-archive", async (
 
     var uploadArchiveResponse = await _amazonGlacier.UploadArchiveAsync(uploadArchieveRequest);
 
+    await _descriptionStorageService.WriteToStorage(new FileStorageModel(
+
+        archiveId: uploadArchiveResponse.ArchiveId,
+        fileDescription: uploadArchieveRequest.ArchiveDescription,
+        fileName: file.FileName,
+        vaultName: vaultName
+    ));
+
+
+
+
 
     return Results.Ok(uploadArchiveResponse);
 
