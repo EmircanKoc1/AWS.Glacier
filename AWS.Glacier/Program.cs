@@ -390,3 +390,44 @@ internal record JobIsExistsModel(
     DescribeJobResponse describeJobResponse);
 
 
+internal interface IDescriptionStorageService
+{
+    Task WriteToStorage(FileStorageModel fileStorageModel, string storageFileName = "storageDescription.txt");
+    Task<IEnumerable<FileStorageModel>> ReadToStorage(string storageFileName = "storageDescription.txt");
+}
+
+internal class DescriptionStorageService : IDescriptionStorageService
+{
+    public async Task<IEnumerable<FileStorageModel>> ReadToStorage(string storageFileName = "storageDescription.txt")
+    {
+        string currentlyDirectory = Directory.GetCurrentDirectory();
+
+        string filePath = Path.Combine(currentlyDirectory, storageFileName);
+
+        using var fileStream = new FileStream(filePath, FileMode.OpenOrCreate);
+        using var streamReader = new StreamReader(fileStream);
+
+        string line = default;
+        ICollection<FileStorageModel> files = new HashSet<FileStorageModel>();
+
+        while ((line = await streamReader.ReadLineAsync()) is not null)
+        {
+            files.Add(JsonSerializer.Deserialize<FileStorageModel>(line));
+        }
+
+        return files;
+    }
+
+    public async Task WriteToStorage(FileStorageModel fileStorageModel, string storageFileName = "storageDescription.txt")
+    {
+        string currentlyDirectory = Directory.GetCurrentDirectory();
+
+        string filePath = Path.Combine(currentlyDirectory, storageFileName);
+
+        using var fileStream = new FileStream(filePath, FileMode.Append);
+        using var streamWriter = new StreamWriter(fileStream);
+
+        await streamWriter.WriteLineAsync(JsonSerializer.Serialize(fileStorageModel));
+
+    }
+}
