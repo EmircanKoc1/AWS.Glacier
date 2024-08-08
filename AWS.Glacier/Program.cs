@@ -130,6 +130,8 @@ app.MapPost("/initate-job", async (
     [FromQuery] string archiveId) =>
 {
 
+    if ((await GetVaultIfExists(_amazonGlacier, vaultName)).describeVaultResponse is null)
+        return Results.NotFound("vault not found");
 
 
     var initiateJobRequest = new InitiateJobRequest()
@@ -148,6 +150,10 @@ app.MapPost("/initate-job", async (
     try
     {
         initiateJobResponse = await _amazonGlacier.InitiateJobAsync(initiateJobRequest);
+    }
+    catch (ResourceNotFoundException ex)
+    {
+        return Results.BadRequest(ex.Message);
     }
     catch (Exception ex)
     {
