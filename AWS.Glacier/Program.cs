@@ -30,18 +30,17 @@ app.MapPost("/create-vault", async (
 {
     var vaultIfExistsModel = await GetVaultIfExists(_amazonGlacier, vaultName);
 
-        await _amazonGlacier.DescribeVaultAsync(describeVaultRequest);
-
+   
     if (vaultIfExistsModel.describeVaultResponse is not null)
         return Results.BadRequest("Vault already exists");
 
   
     var createVaultRequest = new CreateVaultRequest
-        {
-            VaultName = vaultName
-        };
+    {
+        VaultName = vaultName
+    };
 
-        var createVaultResponse = await _amazonGlacier.CreateVaultAsync(createVaultRequest);
+    var createVaultResponse = await _amazonGlacier.CreateVaultAsync(createVaultRequest);
 
     if (createVaultResponse.HttpStatusCode is not System.Net.HttpStatusCode.Created)
         return Results.BadRequest("Vault not created");
@@ -311,7 +310,7 @@ static async Task<VaultIsExistsModel> GetVaultIfExists(
        errorMessage: errorMessage,
        describeVaultResponse: describeVaultResponse);
 
-    }
+}
 
 static async Task<JobIsExistsModel> GetJobIfExists(
     IAmazonGlacier _amazonGlacier,
@@ -353,7 +352,7 @@ static async Task<JobIsExistsModel> GetJobIfExists(
 
 
 static FileInfoModel GetFileInfo(string fileName)
-    {
+{
 
     var fileExtensionIndex = fileName.LastIndexOf(".");
 
@@ -390,7 +389,6 @@ static string GetContentTypeForFileName(string fileName)
 
 }
 
-});
 
 internal record FileInfoModel(string fileName, string fileType);
 
