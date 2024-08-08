@@ -84,6 +84,7 @@ app.MapGet("/describe-vault", async (
 
 app.MapPost("/upload-archive", async (
     [FromServices] IAmazonGlacier _amazonGlacier,
+    [FromServices] IDescriptionStorageService _descriptionStorageService,
     [FromQuery] string vaultName,
     [FromForm] IFormFile file
     ) =>
