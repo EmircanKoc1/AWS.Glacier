@@ -299,11 +299,17 @@ app.MapGet("get-archive", async (
         return Results.BadRequest("job not completed");
 
 
-    var getJobOutputRequest = new GetJobOutputRequest()
+static FileInfoModel GetFileInfo(string fileName)
     {
-        JobId = jobId,
-        VaultName = vaultName
-    };
+
+    var fileExtensionIndex = fileName.LastIndexOf(".");
+
+    var fileExtension = fileName[++fileExtensionIndex..(fileName.Length)];
+
+    return new FileInfoModel(
+        fileType: fileExtension,
+        fileName: fileName);
+}
 
 static string GetContentTypeForFileName(string fileName)
 {
