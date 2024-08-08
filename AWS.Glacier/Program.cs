@@ -88,33 +88,19 @@ app.MapPost("/upload-archive", async (
     ) =>
 {
 
-    try
-    {
-        var describeVaultRequest = new DescribeVaultRequest()
-        {
-            VaultName = vaultName
-        };
+    var vaultIsExistsModel = await GetVaultIfExists(_amazonGlacier, vaultName);
 
-        await _amazonGlacier.DescribeVaultAsync(describeVaultRequest);
+    if (vaultIsExistsModel.describeVaultResponse is null)
+        return Results.BadRequest(vaultIsExistsModel.errorMessage);
 
-    }
-    catch (ResourceNotFoundException)
-    {
-        return Results.NotFound("Vault not exists");
-    }
-    catch (Exception ex)
-    {
-        return Results.BadRequest($"not upload file to vault : {ex.Message}");
-
-    }
 
 
     var uploadArchieveRequest = new UploadArchiveRequest()
     {
         VaultName = vaultName,
         Body = file.OpenReadStream(),
-        ArchiveDescription = $"filename : {file.Name} + {file.FileName}",
-        Checksum = TreeHashGenerator.CalculateTreeHash(file.OpenReadStream())
+        ArchiveDescription = $"{file.FileName}",
+        Checksum = TreeHashGenerator.CalculateTreeHash(file.OpenReadStream()),
     };
 
 
