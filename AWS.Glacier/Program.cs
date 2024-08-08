@@ -253,6 +253,44 @@ app.MapGet("get-archive", async (
     [FromQuery] string jobId,
     [FromQuery] string vaultName) =>
 {
+
+    var vaultIsExistModel = await GetVaultIfExists(
+                                            _amazonGlacier: _amazonGlacier,
+                                            vaultName: vaultName);
+
+    if (string.IsNullOrWhiteSpace(vaultIsExistModel.errorMessage))
+        return Results.BadRequest(vaultIsExistModel.errorMessage);
+
+    DescribeJobResponse describeJobResponse = default;
+
+
+    var jobExistModel = await GetJobIfExists(
+        _amazonGlacier: _amazonGlacier,
+        vaultName: vaultName,
+        jobId: jobId);
+
+    if (string.IsNullOrEmpty(jobExistModel.errorMessage))
+        return Results.BadRequest(jobExistModel.errorMessage);
+
+
+    var getJobOutputRequest = new GetJobOutputRequest()
+    {
+        JobId = jobId,
+        VaultName = vaultName
+    };
+
+    var getJobOutputResponse = await _amazonGlacier.GetJobOutputAsync(getJobOutputRequest);
+
+
+    return Results.File(getJobOutputResponse.Body, "application/pdf", "xx.pdf");
+
+
+});
+
+
+
+app.Run();
+
 static async Task<VaultIsExistsModel> GetVaultIfExists(
     IAmazonGlacier _amazonGlacier,
     string vaultName)
