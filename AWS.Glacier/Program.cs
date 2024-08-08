@@ -217,7 +217,7 @@ app.MapGet("get-archive", async (
                                             _amazonGlacier: _amazonGlacier,
                                             vaultName: vaultName);
 
-    if (string.IsNullOrWhiteSpace(vaultIsExistModel.errorMessage))
+    if (vaultIsExistModel.describeVaultResponse is null)
         return Results.BadRequest(vaultIsExistModel.errorMessage);
 
     DescribeJobResponse describeJobResponse = default;
@@ -228,7 +228,7 @@ app.MapGet("get-archive", async (
         vaultName: vaultName,
         jobId: jobId);
 
-    if (string.IsNullOrEmpty(jobExistModel.errorMessage))
+    if (jobExistModel.describeJobResponse is null)
         return Results.BadRequest(jobExistModel.errorMessage);
 
 
@@ -240,8 +240,10 @@ app.MapGet("get-archive", async (
 
     var getJobOutputResponse = await _amazonGlacier.GetJobOutputAsync(getJobOutputRequest);
 
+    var contentType = GetContentTypeForFileName(getJobOutputResponse.ArchiveDescription);
 
-    return Results.File(getJobOutputResponse.Body, "application/pdf", "xx.pdf");
+
+    return Results.File(getJobOutputResponse.Body, contentType, getJobOutputResponse.ArchiveDescription);
 
 
 });
