@@ -271,7 +271,13 @@ app.MapGet("get-archive", async (
         return Results.NotFound(ex.Message);
     }
 
+static async Task<JobIsExistsModel> GetJobIfExists(
+    IAmazonGlacier _amazonGlacier,
+    string vaultName,
+    string jobId)
+{
     DescribeJobResponse describeJobResponse = default;
+    string errorMessage = default;
 
     try
     {
@@ -287,16 +293,21 @@ app.MapGet("get-archive", async (
     }
     catch (ResourceNotFoundException)
     {
-        return Results.NotFound("job not found");
+        errorMessage = "job not found";
 
     }
     catch (Exception ex)
     {
-        return Results.BadRequest($"job not found: {ex.Message}");
+        errorMessage = $"job not found: {ex.Message}";
     }
 
-    if (!describeJobResponse.Completed)
-        return Results.BadRequest("job not completed");
+
+    return new JobIsExistsModel(
+        errorMessage: errorMessage,
+        vaultName: vaultName,
+        describeJobResponse: describeJobResponse);
+
+}
 
 
 static FileInfoModel GetFileInfo(string fileName)
