@@ -9,6 +9,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonGlacier>();
+builder.Services.AddScoped<IDescriptionStorageService, DescriptionStorageService>();
 
 
 
