@@ -375,6 +375,7 @@ static string GetContentTypeForFileName(string fileName)
 
 }
 
+internal record FileStorageModel(string fileName, string fileDescription, string archiveId, string vaultName);
 
 internal record FileInfoModel(string fileName, string fileType);
 
