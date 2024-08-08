@@ -27,37 +27,26 @@ app.MapPost("/create-vault", async (
     [FromServices] IAmazonGlacier _amazonGlacier,
     [FromQuery] string vaultName) =>
 {
-    try
-    {
-        var describeVaultRequest = new DescribeVaultRequest()
-        {
-            VaultName = vaultName
-        };
+    var vaultIfExistsModel = await GetVaultIfExists(_amazonGlacier, vaultName);
 
         await _amazonGlacier.DescribeVaultAsync(describeVaultRequest);
 
-    }
-    catch (ResourceNotFoundException)
-    {
+    if (vaultIfExistsModel.describeVaultResponse is not null)
+        return Results.BadRequest("Vault already exists");
 
-        var createVaultRequest = new CreateVaultRequest()
+  
+    var createVaultRequest = new CreateVaultRequest
         {
             VaultName = vaultName
         };
 
         var createVaultResponse = await _amazonGlacier.CreateVaultAsync(createVaultRequest);
 
-        if (createVaultResponse.HttpStatusCode == System.Net.HttpStatusCode.OK)
-            return Results.Ok("Vault created");
-    }
-    catch (Exception ex)
-    {
-        return Results.BadRequest($"Vault not created : {ex.Message}");
-
-    }
+    if (createVaultResponse.HttpStatusCode is not System.Net.HttpStatusCode.Created)
+        return Results.BadRequest("Vault not created");
 
 
-    return Results.Ok("Vault  created");
+    return Results.Created();
 
 });
 
