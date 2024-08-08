@@ -169,13 +169,20 @@ app.MapGet("list-jobs", async (
     [FromServices] IAmazonGlacier _amazonGlacier,
     [FromQuery] string vaultName) =>
 {
+    var vaultIsExistsModel = await GetVaultIfExists(_amazonGlacier, vaultName);
+
+    if (vaultIsExistsModel.describeVaultResponse is null)
+        return Results.BadRequest(vaultIsExistsModel.errorMessage);
+
+
+
     var listJobRequest = new ListJobsRequest()
     {
         Limit = 10,
         VaultName = vaultName
     };
 
-    return await _amazonGlacier.ListJobsAsync(listJobRequest);
+    return Results.Ok(await _amazonGlacier.ListJobsAsync(listJobRequest));
 
 });
 
