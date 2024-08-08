@@ -167,51 +167,18 @@ app.MapGet("get-job-description", async (
     [FromQuery] string vaultName) =>
 {
 
-    try
-    {
-        var describeVaultRequest = new DescribeVaultRequest()
-        {
-            VaultName = vaultName
-        };
-        await _amazonGlacier.DescribeVaultAsync(describeVaultRequest);
 
-    }
-    catch (ResourceNotFoundException)
-    {
-        return Results.NotFound("vault not found");
-    }
-    catch (Exception ex)
-    {
-        return Results.NotFound(ex.Message);
-    }
+    var vaultExistsModel = await GetVaultIfExists(_amazonGlacier, vaultName);
 
+    if (vaultExistsModel.describeVaultResponse is null)
+        return Results.BadRequest(vaultExistsModel.errorMessage);
 
-    try
-    {
+    var jobExistsModel = await GetJobIfExists(_amazonGlacier, vaultName, jobId);
 
-        var describeJobRequest = new DescribeJobRequest()
-        {
-            JobId = jobId,
-            VaultName = vaultName
+    if (jobExistsModel.describeJobResponse is null)
+        return Results.BadRequest(jobExistsModel.errorMessage);
 
-        };
-
-        var describeJobResponse = await _amazonGlacier.DescribeJobAsync(describeJobRequest);
-
-        return Results.Ok(describeJobResponse);
-    }
-    catch (ResourceNotFoundException)
-    {
-        return Results.NotFound("job not found");
-
-    }
-    catch (Exception ex)
-    {
-        return Results.BadRequest($"job not found: {ex.Message}");
-    }
-
-
-
+    return Results.Ok(jobExistsModel.describeJobResponse);
 
 });
 
