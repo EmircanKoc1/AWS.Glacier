@@ -155,6 +155,100 @@ app.MapPost("/upload-archive", async (
 
 }).DisableAntiforgery();
 
+app.MapPost("/initate-job", async (
+    [FromServices] IAmazonGlacier _amazonGlacier,
+    [FromQuery] string vaultName,
+    [FromQuery] string archiveId) =>
+{
+
+    var initiateJobRequest = new InitiateJobRequest()
+    {
+        VaultName = vaultName,
+        JobParameters = new JobParameters()
+        {
+            ArchiveId = archiveId,
+            Type = "archive-retrieval", //inventory-retrieval
+            Tier = "Standard" //Expedited ,Bulk , Standart
+        }
+    };
+
+
+
+    var initiateJobResponse = await _amazonGlacier.InitiateJobAsync(initiateJobRequest);
+
+    return Results.Ok(initiateJobResponse);
+
+});
+
+app.MapGet("list-jobs", async (
+    [FromServices] IAmazonGlacier _amazonGlacier,
+    [FromQuery] string vaultName) =>
+{
+    var listJobRequest = new ListJobsRequest()
+    {
+        Limit = 10,
+        VaultName = vaultName
+    };
+
+    return await _amazonGlacier.ListJobsAsync(listJobRequest);
+
+});
+
+app.MapGet("get-job-description", async (
+    [FromServices] IAmazonGlacier _amazonGlacier,
+    [FromQuery] string jobId,
+    [FromQuery] string vaultName) =>
+{
+
+    try
+    {
+        var describeVaultRequest = new DescribeVaultRequest()
+        {
+            VaultName = vaultName
+        };
+        await _amazonGlacier.DescribeVaultAsync(describeVaultRequest);
+
+    }
+    catch (ResourceNotFoundException)
+    {
+        return Results.NotFound("vault not found");
+    }
+    catch (Exception ex)
+    {
+        return Results.NotFound(ex.Message);
+    }
+
+
+    try
+    {
+
+        var describeJobRequest = new DescribeJobRequest()
+        {
+            JobId = jobId,
+            VaultName = vaultName
+
+        };
+
+        var describeJobResponse = await _amazonGlacier.DescribeJobAsync(describeJobRequest);
+
+        return Results.Ok(describeJobResponse);
+    }
+    catch (ResourceNotFoundException)
+    {
+        return Results.NotFound("job not found");
+
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest($"job not found: {ex.Message}");
+    }
+
+
+
+
+});
+
+
 
 app.Run();
 
