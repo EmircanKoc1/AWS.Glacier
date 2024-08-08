@@ -118,6 +118,8 @@ app.MapPost("/initate-job", async (
     [FromQuery] string archiveId) =>
 {
 
+
+
     var initiateJobRequest = new InitiateJobRequest()
     {
         VaultName = vaultName,
@@ -129,9 +131,17 @@ app.MapPost("/initate-job", async (
         }
     };
 
+    InitiateJobResponse initiateJobResponse = default;
 
+    try
+    {
+        initiateJobResponse = await _amazonGlacier.InitiateJobAsync(initiateJobRequest);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(ex.Message);
 
-    var initiateJobResponse = await _amazonGlacier.InitiateJobAsync(initiateJobRequest);
+    }
 
     return Results.Ok(initiateJobResponse);
 
