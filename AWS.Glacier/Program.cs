@@ -248,7 +248,73 @@ app.MapGet("get-job-description", async (
 
 });
 
+app.MapGet("get-archive", async (
+    [FromServices] IAmazonGlacier _amazonGlacier,
+    [FromQuery] string jobId,
+    [FromQuery] string vaultName) =>
+{
+    try
+    {
+        var describeVaultRequest = new DescribeVaultRequest()
+        {
+            VaultName = vaultName
+        };
+        await _amazonGlacier.DescribeVaultAsync(describeVaultRequest);
+
+    }
+    catch (ResourceNotFoundException)
+    {
+        return Results.NotFound("vault not found");
+    }
+    catch (Exception ex)
+    {
+        return Results.NotFound(ex.Message);
+    }
+
+    DescribeJobResponse describeJobResponse = default;
+
+    try
+    {
+
+        var describeJobRequest = new DescribeJobRequest()
+        {
+            JobId = jobId,
+            VaultName = vaultName
+        };
+
+        describeJobResponse = await _amazonGlacier.DescribeJobAsync(describeJobRequest);
+
+    }
+    catch (ResourceNotFoundException)
+    {
+        return Results.NotFound("job not found");
+
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest($"job not found: {ex.Message}");
+    }
+
+    if (!describeJobResponse.Completed)
+        return Results.BadRequest("job not completed");
+
+
+    var getJobOutputRequest = new GetJobOutputRequest()
+    {
+        JobId = jobId,
+        VaultName = vaultName
+    };
+
+    var getJobOutputResponse = await _amazonGlacier.GetJobOutputAsync(getJobOutputRequest);
+
+
+    return Results.Ok(getJobOutputResponse);
+
+
+});
 
 
 app.Run();
+
+
 
