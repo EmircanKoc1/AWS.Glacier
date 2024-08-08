@@ -250,6 +250,20 @@ app.MapGet("get-archive", async (
 
 
 
+app.MapPost("write-file-archive-description-storage-local", async (
+  [FromBody] FileStorageModel fileStorageModel,
+  [FromServices] IDescriptionStorageService _descriptionStorageService) =>
+{
+    await _descriptionStorageService.WriteToStorage(fileStorageModel);
+    return Results.Ok();
+});
+
+app.MapGet("read-file-archive-description-storage-local", async (
+  [FromServices] IDescriptionStorageService _descriptionStorageService) =>
+{
+    return Results.Ok(await _descriptionStorageService.ReadToStorage());
+});
+
 app.Run();
 
 static async Task<VaultIsExistsModel> GetVaultIfExists(
