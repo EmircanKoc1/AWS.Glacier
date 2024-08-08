@@ -86,8 +86,7 @@ app.MapPost("/upload-archive", async (
     [FromServices] IAmazonGlacier _amazonGlacier,
     [FromServices] IDescriptionStorageService _descriptionStorageService,
     [FromQuery] string vaultName,
-    [FromForm] IFormFile file
-    ) =>
+    [FromForm] IFormFile file) =>
 {
 
     var vaultIsExistsModel = await GetVaultIfExists(_amazonGlacier, vaultName);
