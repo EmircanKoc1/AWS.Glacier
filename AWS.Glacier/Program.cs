@@ -1,6 +1,5 @@
 using Amazon.Glacier;
 using Amazon.Glacier.Model;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,11 +29,11 @@ app.MapPost("/create-vault", async (
 {
     var vaultIfExistsModel = await GetVaultIfExists(_amazonGlacier, vaultName);
 
-   
+
     if (vaultIfExistsModel.describeVaultResponse is not null)
         return Results.BadRequest("Vault already exists");
 
-  
+
     var createVaultRequest = new CreateVaultRequest
     {
         VaultName = vaultName
@@ -72,29 +71,12 @@ app.MapGet("/describe-vault", async (
 {
     DescribeVaultResponse describeVaultResponse = default;
 
-    try
-    {
-        var describeVaultRequest = new DescribeVaultRequest()
-        {
-            VaultName = vaultName
-        };
+    var vaultIsExistsModel = await GetVaultIfExists(_amazonGlacier, vaultName);
 
-        describeVaultResponse = await _amazonGlacier.DescribeVaultAsync(describeVaultRequest);
+    if (vaultIsExistsModel.describeVaultResponse is DescribeVaultResponse response)
+        return Results.Ok(response);
 
-    }
-    catch (ResourceNotFoundException)
-    {
-        return Results.NotFound("Vault not exists");
-    }
-    catch (Exception ex)
-    {
-        return Results.BadRequest($"Vault not created : {ex.Message}");
-
-    }
-
-    return Results.Ok(describeVaultResponse);
-
-
+    return Results.BadRequest(vaultIsExistsModel.errorMessage);
 
 });
 
