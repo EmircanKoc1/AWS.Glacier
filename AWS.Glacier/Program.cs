@@ -1,6 +1,7 @@
 using Amazon.Glacier;
 using Amazon.Glacier.Model;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonGlacier>();
 builder.Services.AddScoped<IDescriptionStorageService, DescriptionStorageService>();
-
 
 
 var app = builder.Build();
@@ -70,7 +70,6 @@ app.MapGet("/describe-vault", async (
     [FromServices] IAmazonGlacier _amazonGlacier,
     [FromQuery] string vaultName) =>
 {
-    DescribeVaultResponse describeVaultResponse = default;
 
     var vaultIsExistsModel = await GetVaultIfExists(_amazonGlacier, vaultName);
 
@@ -220,7 +219,6 @@ app.MapGet("get-archive", async (
     if (vaultIsExistModel.describeVaultResponse is null)
         return Results.BadRequest(vaultIsExistModel.errorMessage);
 
-    DescribeJobResponse describeJobResponse = default;
 
 
     var jobExistModel = await GetJobIfExists(
@@ -266,6 +264,37 @@ app.MapDelete("delete-vault", async (
 
 
     return Results.Ok(deleteVaultResponse);
+});
+
+app.MapDelete("delete-archive", async (
+    [FromServices] IAmazonGlacier _amazonGlacier,
+    [FromQuery] string archiveId,
+    [FromQuery] string vaultName) =>
+{
+
+    var vaultIsExistsModel = await GetVaultIfExists(_amazonGlacier, vaultName);
+
+    if (vaultIsExistsModel.describeVaultResponse is null)
+        return Results.BadRequest(vaultIsExistsModel.errorMessage);
+
+    var deleteArchiveRequest = new DeleteArchiveRequest()
+    {
+        ArchiveId = archiveId,
+        VaultName = vaultName
+    };
+
+    DeleteArchiveResponse deleteArchiveResponse = default;
+    try
+    {
+        deleteArchiveResponse = await _amazonGlacier.DeleteArchiveAsync(deleteArchiveRequest);
+
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(ex.Message);
+    }
+
+    return Results.Ok(deleteArchiveResponse);
 });
 
 

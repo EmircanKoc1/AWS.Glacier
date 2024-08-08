@@ -1,0 +1,3 @@
+{"fileName":"string","fileDescription":"string","archiveId":"string","vaultId":"string"}
+{"fileName":"string","fileDescription":"strindklkldnlg","archiveId":"string","vaultId":"string"}
+{"fileName":"image.png","fileDescription":"image.png","archiveId":"iN1d6ILc5yc3dzyVP1aTFp1pOJZNVgx8I-gy5mDANB98RmrSqc8rRnsJ-H4nvLp2Ykb21-0rEifRWTLcFu83Qo5C-VZKms_ZHbirfK66B-lbnHSNeIRj0MBEXNDsw_JZjfBuhMZQFQ","vaultName":"denemevault"}
