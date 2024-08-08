@@ -248,6 +248,25 @@ app.MapGet("get-archive", async (
 
 });
 
+app.MapDelete("delete-vault", async (
+    [FromServices] IAmazonGlacier _amazonGlacier,
+    [FromQuery] string vaultName) =>
+{
+    var vaultIsExistsModel = await GetVaultIfExists(_amazonGlacier, vaultName);
+
+    if (vaultIsExistsModel.describeVaultResponse is null)
+        return Results.BadRequest(vaultIsExistsModel.errorMessage);
+
+    var deleteVaultRequest = new DeleteVaultRequest()
+    {
+        VaultName = vaultName
+    };
+    var deleteVaultResponse = await _amazonGlacier.DeleteVaultAsync(deleteVaultRequest);
+
+
+
+    return Results.Ok(deleteVaultResponse);
+});
 
 
 app.MapPost("write-file-archive-description-storage-local", async (
