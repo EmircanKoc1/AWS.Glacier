@@ -313,8 +313,16 @@ app.MapGet("get-archive", async (
 
 });
 
+internal record FileInfoModel(string fileName, string fileType);
 
-app.Run();
+internal record VaultIsExistsModel(
+    string vaultName,
+    string errorMessage,
+    DescribeVaultResponse describeVaultResponse);
 
+internal record JobIsExistsModel(
+    string vaultName,
+    string errorMessage,
+    DescribeJobResponse describeJobResponse);
 
 
