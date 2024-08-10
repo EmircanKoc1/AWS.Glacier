@@ -312,6 +312,26 @@ app.MapGet("read-file-archive-description-storage-local", async (
     return Results.Ok(await _descriptionStorageService.ReadToStorage());
 });
 
+app.MapGet("inventory-retrieval-by-vault-name", async (
+    [FromServices] IAmazonGlacier _amazonGlacier,
+    [FromQuery] string vaultName) =>
+{
+
+    var initiateJobRequest = new InitiateJobRequest
+    {
+        VaultName = vaultName,
+        JobParameters = new JobParameters
+        {
+            Type = "inventory-retrieval"
+        }
+    };
+
+
+    var response = await _amazonGlacier.InitiateJobAsync(initiateJobRequest);
+
+    return Results.Ok(response);
+});
+
 app.Run();
 
 static async Task<VaultIsExistsModel> GetVaultIfExists(
